@@ -18,6 +18,10 @@
             var formData = new FormData();
 
             var inputFile = $("input[type='file']");
+            console.log(inputFile);
+            
+
+
 
             var files = inputFile[0].files;
 
@@ -38,6 +42,7 @@
                 },
                 error: function(jqXHR, textStatus, errorThrown){
                     console.log(textStatus);
+                    console.log(errorThrown);
                 }
             
 
