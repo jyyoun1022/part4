@@ -40,6 +40,7 @@ public class UploadController {
     public ResponseEntity<List<UploadResultDTO>> uploadFile(MultipartFile[] uploadFiles) {
 
         List<UploadResultDTO> resultDTOList = new ArrayList<>();
+
         for (MultipartFile uploadFile : uploadFiles) {
 
             // 이미지 파일만 업로드 가능
@@ -53,6 +54,8 @@ public class UploadController {
 
             String fileName = originalName.substring(originalName.lastIndexOf("\\") + 1);
 
+            log.info("fileName: "+fileName);
+
             // 날짜 폴더 생성
             String folderPath = makeFolder();
 
@@ -60,7 +63,7 @@ public class UploadController {
             String uuid = UUID.randomUUID().toString();
 
             //저장할 파일 이름
-            String saveName = uploadPath + File.separator + folderPath + File.separator + uuid + fileName;
+            String saveName = uploadPath + File.separator + folderPath + File.separator + uuid +"_"+ fileName;
 
             Path savePath = Paths.get(saveName);
 
@@ -94,6 +97,32 @@ public class UploadController {
 
     /** 업로드 이미지 출력하기
      */
+    @GetMapping("/display")
+    public ResponseEntity<byte[]> getFile(String fileName){
 
+        ResponseEntity<byte[]> result = null;
+
+        try{
+            String srcFileName = URLDecoder.decode(fileName,"UTF-8");
+            //URL 인코딩된 파일 이름을 디코딩
+            log.info("filName : "+srcFileName);
+            File file = new File(uploadPath + File.separator + srcFileName);
+            // 해당 URL의 파일을 생성
+            log.info("File : "+file);
+
+            HttpHeaders header = new HttpHeaders();
+
+            //File객체를 Path로 변환하여 MIME 타입을 판단하여 HTTPHeaders의 Content-Type에  값으로 들어갑니다.
+            header.add("Content-Type",Files.probeContentType(file.toPath()));
+
+            //파일 데이터 처리
+            result = new ResponseEntity<>(FileCopyUtils.copyToByteArray(file),HttpStatus.OK);
+
+        }catch(Exception e){
+            log.error(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return  result;
+    }
     }
 

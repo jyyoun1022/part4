@@ -3,6 +3,7 @@ package part4.part4.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;

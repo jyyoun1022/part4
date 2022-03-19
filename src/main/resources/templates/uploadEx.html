@@ -40,7 +40,7 @@
                dataType:'json',
                success: function(result){
                    //나중에 화면 처리
-                   console.log(result);
+                   showUploadedImage(result);
                },
                error: function(jqXHR, textStatus, errorThrown){
                    console.log(textStatus);
@@ -48,6 +48,20 @@
 
            }); //$.ajax
        });
+       // 추가 
+     // Ajax 업로드 이후 이미지들을 호출하는 함수 
+     function showUploadedImage(arr){
+
+        console.log(arr);
+
+        var divArea = $(".uploadResult");
+
+        for(var i =0; i<arr.length; i++){
+            divArea.append("<img src='/display?fileName=" + arr[i].imageURL+"'>");
+        }
+     }
+
+       
     </script>
 
 </body>
