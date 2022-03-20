@@ -1,9 +1,8 @@
 package part4.part4.controller;
-
+import net.coobird.thumbnailator.Thumbnailator;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,14 +16,12 @@ import part4.part4.dto.UploadResultDTO;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +37,7 @@ public class UploadController {
     public ResponseEntity<List<UploadResultDTO>> uploadFile(MultipartFile[] uploadFiles) {
 
         List<UploadResultDTO> resultDTOList = new ArrayList<>();
+
 
         for (MultipartFile uploadFile : uploadFiles) {
 
@@ -68,7 +66,16 @@ public class UploadController {
             Path savePath = Paths.get(saveName);
 
             try {
-                uploadFile.transferTo(savePath);// 실제 이미지 저장
+                //원본 파일 저장
+                uploadFile.transferTo(savePath);
+
+                //섬네일 생성 (섬네일 파일 이름은 중간에 "s_"로 시작하도록)
+                String thumbnailSaveName = uploadPath + File.separator + folderPath + File.separator
+                        + "s_" + uuid +"_"+ fileName;
+                File thumbnailFile = new File(thumbnailSaveName);
+
+                Thumbnailator.createThumbnail(savePath.toFile(), thumbnailFile,100,100);
+
                 resultDTOList.add(new UploadResultDTO(fileName,uuid,folderPath));
             }catch (IOException e){
                 e.printStackTrace();
@@ -116,7 +123,7 @@ public class UploadController {
             header.add("Content-Type",Files.probeContentType(file.toPath()));
 
             //파일 데이터 처리
-            result = new ResponseEntity<>(FileCopyUtils.copyToByteArray(file),HttpStatus.OK);
+            result = new ResponseEntity<>(FileCopyUtils.copyToByteArray(file),header,HttpStatus.OK);
 
         }catch(Exception e){
             log.error(e.getMessage());
