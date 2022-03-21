@@ -35,7 +35,7 @@ public interface MovieService {
                         .build();
                 return movieImage;
             }).collect(Collectors.toList());
-            entityMap.put("imageList",movieImageList);
+            entityMap.put("imgList",movieImageList);
         }
         return entityMap;
     }

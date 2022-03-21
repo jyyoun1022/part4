@@ -26,9 +26,169 @@
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
+
+        <style>
+            .uploadResult {
+                width: 100%;
+                background-color: gray;
+                margin-top: 10px;
+            }
+
+            .uploadResult ul {
+                display: flex;
+                flex-flow: row;
+                justify-content: center;
+                align-items: center;
+                vertical-align: top;
+                overflow: auto;
+            }
+
+            .uploadResult ul li {
+                list-style: none;
+                padding: 10px;
+                margin-left: 2em;
+            }
+
+            .uploadResult ul li img {
+                width: 100px;
+            }
+        </style>
+
+        <div class="uploadResult">
+            <ul>
+
+            </ul>
+        </div>
         <script>
              $(document).ready(function(e){
 
+                var regex =new RegExp("(.*?)\.(exe|sh|zip|alz|tiff)$");
+                // .*? : 줄 바꿈 문자를 제외한 모든 문자를 0개 이상 찾되, 최소 크기로 찾는다.
+                var maxSize = 10485760; //10MB
+
+                function checkExtension(fileName, fileSize){
+
+                    if(fileSize>maxSize){
+                        alert("파일 사이즈 초과")
+                        return false;
+                    }
+                    if(regex.test(fileName)){   //RegExp.test() => 패턴이 있는지 없는지를 테스트하는데 목적
+                        alert("해당 종류의 파일은 업로드 할 수 없습니다.")
+                        return false;
+                    }
+                    return true;
+                }
+
+                $(".custom-file-input").on("change",function(){
+
+                    var fileName = $(this).val().split("\\").pop();
+                    //pop() : 배열에서 마지막 요소를 제거하고 그 요소를 반환합니다.
+                    $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+                    //siblings() : 자신을 제외한 형제 요소를 찾습니다.
+                    //addClass() : 새로운 클래스를 추가(이미 가지고 있는 클래스는 추가되지 않습니다.)
+                    //html() : 요소안의 내용을 지우고 새로운 내용을 넣습니다.
+                    var formData = new FormData();
+                    var inputFile = $(this);
+                    var files = inputFile[0].files;
+                    var appended = false;
+                    console.log(formData);
+                    console.log(inputFile);
+                    console.log(files);
+                    
+
+                    for(var i=0; i<files.length; i++){
+                        if(!checkExtension(files[i].name, files[i].size)){
+                            return false;
+                        }
+                        console.log(files[i]);
+                        formData.append("uploadFiles",files[i]);
+                        appended = true;
+                    }
+                    //upload를 하지 않는다.
+                    if(!appended){
+                        return;
+                    }
+                    for(var value of formData.values()){
+                        console.log(value);
+                    }
+
+                    //실제 업로드 부분
+                    $.ajax({
+                        url: '/uploadAjax',
+                        processData: false,
+                        contentType : false,
+                        data : formData,
+                        type : 'POST',
+                        dataType : 'json',
+                        success : function(result){
+                            console.log(result);
+                            showResult(result);
+                        },
+                        error : function(jqXHR,textStatus,errorThrown){
+                            conlose.log(textStatus);
+                        }
+                    });//$.ajax
+                });//end change event
+
+                function showResult(uploadResultArr){
+                    
+                    var uploadUL = $(".uploadResult ul");
+                    var str ="";
+
+                    $(uploadResultArr).each(function(i,obj){
+
+                        str += "<li data-name='" + obj.fileName + "' data-path='"+obj.folderPath+"' data-uuid='"+obj.uuid+"'>";
+                        str + " <div>";
+                        str += "<button type='button' data-file=\'" + obj.imageURL + "\' "
+                        str += "class='btn-warning btn-sm'>X</button><br>";
+                        str += "<img src='/display?fileName=" + obj.thumbnailURL + "'>";
+                        str += "</div>";
+                        str + "</li>";
+                    });
+                    uploadUL.append(str);
+                }
+//삭제처리
+                $(".uploadResult").on("click","li button",function(e){
+                    console.log("delete file");
+
+                    var targetFile = $(this).data("file");
+                    var targetLi = $(this).closest("li");
+
+                    $.ajax({
+                        url: '/removeFile',
+                        data : {fileName : targetFile},//{변수 : 변수1의값}
+                        dataType : 'text',
+                        type : 'POST',
+                        success : function(result){
+                            alert(result);
+                            targetLi.remove();
+                        }
+                    });//$.ajax
+                });
+//Prevent submit
+                     $(".btn-primary").on("click", function(e) {
+            e.preventDefault();
+
+            var str = "";
+
+            $(".uploadResult li").each(function(i,obj){
+                var target = $(obj);
+
+                str += "<input type='hidden' name='imageDTOList["+i+"].imgName' value='"+target.data('name') +"'>";
+
+                str += "<input type='hidden' name='imageDTOList["+i+"].path' value='"+target.data('path')+"'>";
+
+                str += "<input type='hidden' name='imageDTOList["+i+"].uuid' value='"+target.data('uuid')+"'>";
+
+            });
+
+            //태그들이 추가된 것을 확인한 후에 comment를 제거
+            $(".box").html(str);
+
+            $("form").submit();
+
+        });
+                //
     }); //document ready
         </script>
     </th:block>
