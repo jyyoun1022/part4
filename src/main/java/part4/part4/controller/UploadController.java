@@ -107,7 +107,7 @@ public class UploadController {
     /** 업로드 이미지 출력하기
      */
     @GetMapping("/display")
-    public ResponseEntity<byte[]> getFile(String fileName){
+    public ResponseEntity<byte[]> getFile(String fileName,String size){
 
         ResponseEntity<byte[]> result = null;
 
@@ -116,6 +116,9 @@ public class UploadController {
             //URL 인코딩된 파일 이름을 디코딩
             log.info("filName : "+srcFileName);
             File file = new File(uploadPath + File.separator + srcFileName);
+            if(size != null && size.equals("1")){
+                file = new File(file.getParent(),file.getName().substring(2));
+            }
             // 해당 URL의 파일을 생성
             log.info("File : "+file);
 
