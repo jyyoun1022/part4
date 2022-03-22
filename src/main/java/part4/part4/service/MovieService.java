@@ -18,6 +18,8 @@ public interface MovieService {
     Long register(MovieDTO movieDTO);
     //목록처리
     PageResultDTO<MovieDTO,Object[]> getList(PageRequestDTO pageRequestDTO);
+    //조회처리
+    MovieDTO getMovie(Long mno);
 
 
 
