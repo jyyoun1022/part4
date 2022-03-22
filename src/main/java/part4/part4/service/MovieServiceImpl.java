@@ -16,6 +16,7 @@ import part4.part4.entity.MovieImage;
 import part4.part4.repository.MovieImageRepository;
 import part4.part4.repository.MovieRepository;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -53,7 +54,10 @@ public class MovieServiceImpl implements MovieService{
 
         Page<Object[]> result = movieRepository.getListPage(pageable);
         Function<Object[],MovieDTO> fn = (arr ->entityToDto(
-                (Movie)arr[0],(List<MovieImage>) arr[1],(Double)arr[2],(Long) arr[3]));
+                (Movie)arr[0],
+                (List<MovieImage>)(Arrays.asList((MovieImage)arr[1])),
+                (Double)arr[2],
+                (Long) arr[3]));
 
 
         return new PageResultDTO<>(result,fn);
