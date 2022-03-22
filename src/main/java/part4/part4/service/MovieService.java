@@ -2,6 +2,8 @@ package part4.part4.service;
 
 import part4.part4.dto.MovieDTO;
 import part4.part4.dto.MovieImageDTO;
+import part4.part4.dto.PageRequestDTO;
+import part4.part4.dto.PageResultDTO;
 import part4.part4.entity.Movie;
 import part4.part4.entity.MovieImage;
 
@@ -12,8 +14,14 @@ import java.util.stream.Collectors;
 
 public interface MovieService {
 
+    //등록처리
     Long register(MovieDTO movieDTO);
+    //목록처리
+    PageResultDTO<MovieDTO,Object[]> getList(PageRequestDTO pageRequestDTO);
 
+
+
+    //DTO -> Entity 변환
     default Map<String,Object> dtoToEntity(MovieDTO movieDTO){  //Map타입으로 반환
         Map<String,Object> entityMap = new HashMap<>();
 
@@ -38,5 +46,29 @@ public interface MovieService {
             entityMap.put("imgList",movieImageList);
         }
         return entityMap;
+    }
+    //Entity -> DTO 변환
+    default MovieDTO entityToDto(Movie movie,List<MovieImage>movieImages,Double avg,Long reviewCnt){
+        MovieDTO movieDTO = MovieDTO.builder()
+                .mno(movie.getMno())
+                .title(movie.getTitle())
+                .regDate(movie.getRegDate())
+                .modDate(movie.getModDate())
+                .build();
+
+        List<MovieImageDTO>movieImageDTOList =movieImages.stream().map(movieImage -> {
+            MovieImageDTO movieImageDTO = MovieImageDTO.builder()
+                    .imgName(movieImage.getImgName())
+                    .path(movieImage.getPath())
+                    .uuid(movieImage.getUuid())
+                    .build();
+            return movieImageDTO;
+        }).collect(Collectors.toList());
+
+        movieDTO.setImageDTOList(movieImageDTOList);
+        movieDTO.setAvg(avg);
+        movieDTO.setReviewCnt(reviewCnt.intValue());
+
+        return movieDTO;
     }
 }
